@@ -73,27 +73,25 @@ namespace recordingCs
 				await tempolaryStream.FlushAsync();
 			}
 
-			status = Status.Finish;
+			status = Status.Finished;
+			CaptureFinished?.Invoke(this);
 		}
 
-		public async Task StopAsync()
+		public void Stop()
 		{
 			lock (captureLock)
 			{
 				if (status != Status.Recording)
 					throw new System.InvalidOperationException("");
-				status = Status.Close;
+				status = Status.Closing;
 
 				SetSample(null);
 			}
-
-			while (status != Status.Finish)
-				await Task.Delay(1);
 		}
 
 		public async Task SaveAsync(string fileName, TimeSpan duration)
 		{
-			if (status != Status.Finish)
+			if (status != Status.Finished)
 				throw new System.InvalidOperationException("");
 
 			var storageFolder = KnownFolders.AppCaptures;
@@ -141,9 +139,9 @@ namespace recordingCs
 			}
 		}
 
-		private async void CaptureItem_Closed(GraphicsCaptureItem sender, object args)
+		private void CaptureItem_Closed(GraphicsCaptureItem sender, object args)
 		{
-			await StopAsync();
+			Stop();
 		}
 
 		private void FramePool_FrameArrived(Direct3D11CaptureFramePool sender, object args)
@@ -163,7 +161,7 @@ namespace recordingCs
 		{
 			lock (captureLock)
 			{
-				if (status == Status.Close)
+				if (status == Status.Closing)
 				{
 					args.Request.Sample = null;
 				}
@@ -177,7 +175,7 @@ namespace recordingCs
 
 		public enum Status
 		{
-			None, Ready, Recording, Close, Finish
+			None, Ready, Recording, Closing, Finished
 		}
 
 		private MediaStreamSource streamSource = null;
@@ -191,5 +189,7 @@ namespace recordingCs
 		private MediaStreamSourceSampleRequestDeferral sampleDeferral = null;
 		private MediaStreamSourceSampleRequest sampleRequest = null;
 		private TimeSpan recordingStartTime = TimeSpan.Zero;
+
+		public event Action<ScreenRecorder> CaptureFinished;
 	}
 }
