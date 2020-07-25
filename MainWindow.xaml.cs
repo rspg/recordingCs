@@ -45,16 +45,32 @@ namespace recordingCs
 
 		private async void StartButton_Click(object sender, RoutedEventArgs e)
 		{
-			//var hwnd = new IntPtr(0x00000000000404FE);
-			var hwnd = new IntPtr(0x0000000000DE0FF6);
-			recorder = ScreenRecorder.Create(hwnd);
-			recorder.CaptureFinished += Recorder_CaptureFinished;
-			await recorder.StartAsync();
+			var hwnd = new IntPtr(0x00000000000404F8);
+			//var hwnd = new IntPtr(0x0000000000DE0FF6);
+			try
+			{
+				recorder = ScreenRecorder.Create(hwnd);
+				recorder.CaptureFinished += Recorder_CaptureFinished;
+				await recorder.StartAsync();
+			}
+			catch (Exception)
+			{
+				recorder?.Dispose();
+				recorder = null;
+			}
 		}
 
 		private async void Recorder_CaptureFinished(ScreenRecorder obj)
 		{
-			await recorder.SaveAsync("test", TimeSpan.MaxValue);
+			try
+			{
+				await recorder.SaveAsync("test", TimeSpan.FromSeconds(5));
+			}
+			catch(Exception)
+			{
+
+			}
+
 			recorder.Dispose();
 			recorder = null;
 		}

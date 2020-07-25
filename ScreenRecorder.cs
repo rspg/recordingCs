@@ -51,7 +51,7 @@ namespace recordingCs
 		public async Task StartAsync()
 		{
 			if (status != Status.Ready)
-				throw new System.InvalidOperationException("");
+				throw new System.InvalidOperationException("Require Status.Ready");
 			status = Status.Recording;
 
 			var tempolaryPath = Path.GetTempFileName();
@@ -82,7 +82,7 @@ namespace recordingCs
 			lock (captureLock)
 			{
 				if (status != Status.Recording)
-					throw new System.InvalidOperationException("");
+					throw new System.InvalidOperationException("Require Status.Recording");
 				status = Status.Closing;
 
 				SetSample(null);
@@ -92,7 +92,7 @@ namespace recordingCs
 		public async Task SaveAsync(string fileName, TimeSpan duration)
 		{
 			if (status != Status.Finished)
-				throw new System.InvalidOperationException("");
+				throw new System.InvalidOperationException("Require Status.Finished");
 
 			var storageFolder = KnownFolders.AppCaptures;
 			var destination = await storageFolder.CreateFileAsync(fileName + ".mp4", CreationCollisionOption.ReplaceExisting);
